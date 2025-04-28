@@ -38,9 +38,9 @@ is.factor(results_fen$Site)
 
 #Ecoli stats
 hist(results_fen$Average_E_Coli_per_100ml)#big right skew
-favstats(results_fen$Average_E_Coli_per_100ml) #Massive range. Median far below mean
+favstats(results_fen$Average_E_Coli_per_100ml) #Large range. Median far below mean
 results_fen$ecoli_logged = log(results_fen$Average_E_Coli_per_100ml)
-hist(results_fen$ecoli_logged)#not normal
+hist(results_fen$ecoli_logged)#not normally distributed
 shapiro.test(results_fen$ecoli_logged) #0.7W and p value < 0.05. So still not normal
 #Nutrients stats
 favstats(results_fen$TON_mg_l) 
@@ -50,7 +50,7 @@ favstats(results_fen$TN_mg_l)
 favstats(results_fen$TP_ug_l)
 favstats(results_fen$TDN_mg_l)
 favstats(results_fen$PON_mg_l)
-#TON and TN have much smaller ranges than NH4 but are in mg not ug. PON slightly higher range than TDN. PO4 and TP both big ranges but again in ug.
+#TON and TN have much smaller ranges than NH4. PON slightly higher range than TDN. PO4 and TP both have large  ranges. 
 hist(results_fen$TON_mg_l)
 hist(results_fen$NH4_ug_l)
 hist(results_fen$PO4_ug_l)
@@ -146,18 +146,14 @@ boxplot_4 = bwplot(results_4$ecoli_logged, xlab = expression("Logged "*italic("E
 boxplot_post_basin = bwplot(results_post_basin$ecoli_logged, xlab = "Logged E.Coli/100 mL", main = "Sites 4, 5, 6,7, 8 and 9")
 boxplot_post_basin_no_4 = bwplot(results_post_basin_no_4$ecoli_logged, xlab = expression("Logged "*italic("E. coli")*" (CFU / 100 mL)"), main = "Sites 5, 6,7, 8 and 9", xlim = x_limits)
 boxplots_basins = plot_grid(boxplot_pre_basin, boxplot_4, boxplot_post_basin_no_4, nrow = 3, align = "v", rel_heights = c(1, 1, 1))
-boxplots_basins #Shows the range has shot down because of the values of Site 4 increasing it
+boxplots_basins #Shows the range has decreased signficantly without Site 4 
 
 #field measurements tests
-wilcox.test(results_post_basin$pH, results_pre_basin$pH)# no difference
-wilcox.test(results_post_basin$DO..mg.l., results_pre_basin$DO..mg.l.) #yep
-wilcox.test(results_post_basin$EC..μS., results_pre_basin$EC..μS.)#no
-wilcox.test(results_post_basin$Temperature...C., results_pre_basin$Temperature...C.)#no
-kruskal.test(EC..μS. ~ Site, data = results_fen) # differences
-kruskal.test(pH ~ Site, data = results_fen) # differences
-kruskal.test(DO..mg.l. ~ Site, data = results_fen) #differences
-kruskal.test(Temperature...C. ~ Site, data = results_fen) # differences
-#Shows statistical differences amongst all field observations between the sites but only for DO with pre and post basin 
+wilcox.test(results_post_basin$pH, results_pre_basin$pH)
+wilcox.test(results_post_basin$DO..mg.l., results_pre_basin$DO..mg.l.) 
+wilcox.test(results_post_basin$EC..μS., results_pre_basin$EC..μS.)
+wilcox.test(results_post_basin$Temperature...C., results_pre_basin$Temperature...C.)
+#Shows statistical with only DO  
 
 field_measurement_model_ecoli = glm.nb(Average_E_Coli_per_100ml ~ Temperature...C. + DO..mg.l. + EC..μS. + pH, data = results_fen)
 resid_df_field = df.residual(field_measurement_model_ecoli)
@@ -194,14 +190,14 @@ plot(fitted(gam_model_po4_ecoli), residuals(gam_model_po4_ecoli, type = "pearson
      xlab = "Fitted values", ylab = "Pearson Residuals")+
   abline(h = 0, col = "red") # slight clustering at right end
 qqnorm(residuals(gam_model_po4_ecoli, type = "pearson"))
-qqline(residuals(gam_model_po4_ecoli, type = "pearson"), col = "red") # not too bad
-hist(residuals(gam_model_po4_ecoli), xlab = "Residuals")# not that normal
+qqline(residuals(gam_model_po4_ecoli, type = "pearson"), col = "red") # acceptable
+hist(residuals(gam_model_po4_ecoli), xlab = "Residuals")# acceptable
 plot(fitted(gam_model_po4_ecoli), resid_gam_po4, 
      xlab = "Fitted values", ylab = "Residuals", 
      main = "Residuals vs Fitted")
 abline(h = 0, col = "red", lwd = 2)
 summary(gam_model_po4_ecoli)
-#Insignificant (p = 0.07) with an adjusted R² of 0.332. NO relationship between PO4 and E coli
+#Insignificant (p = 0.07) with an adjusted R² of 0.332. No relationship between PO4 and E coli
 #Model for TON and e coli
 ton_ecoli = glm.nb(log(Average_E_Coli_per_100ml) ~ TON_mg_l, data = results_fen)
 resid_df_tonec = df.residual(ton_ecoli)
@@ -213,9 +209,9 @@ plot(fitted(ton_ecoli), residuals(ton_ecoli, type = "pearson"),
      xlab = "Fitted values", ylab = "Pearson Residuals")+
   abline(h = 0, col = "red") # not normal really
 qqnorm(residuals(ton_ecoli, type = "pearson"))
-qqline(residuals(ton_ecoli, type = "pearson"), col = "red") # average
-hist(residuals(ton_ecoli), xlab = "Residuals")# normal
-shapiro.test(residuals(ton_ecoli)) #normal
+qqline(residuals(ton_ecoli, type = "pearson"), col = "red") # acceptable
+hist(residuals(ton_ecoli), xlab = "Residuals")# acceptable
+shapiro.test(residuals(ton_ecoli)) 
 summary(ton_ecoli)# statistically significant decreases
 ggplot(results_fen, aes(x = ecoli_logged, y = TON_mg_l)) +
   geom_point() +                                      
@@ -244,7 +240,7 @@ ggplot(results_fen, aes(x = ecoli_logged, y = NH4_mg_l)) +
   theme_minimal()+
   labs(x = "Average Logged E. coli CFUs per 100 mL",
        y = "NH4 (mg/L)")
-#Again not completely normal but still inidicates strong positive relationship
+
 #INTERACTION PLOTS
 # Categorizing e coli into Low, Medium, High
 results_fen$E_Coli_Category <- cut(results_fen$Average_E_Coli_per_100ml,
@@ -315,7 +311,7 @@ ggplot(results_fen, aes(x = ec_logged, y = ecoli_logged)) +
 
 hist(results_fen$Average_Salmonella_per_100ml)
 cor.test(x= results_fen$Average_Salmonella_per_100ml, y= results_fen$Average_E_Coli_per_100ml, method = 'spearman')
-#0.8 and p val v small. V strong positive correlation
+#0.8 and p value is very small. Very strong positive correlation
 
 #Nutrient Callibrations
 NH4_data = read.csv("NH4_data.csv")
@@ -467,7 +463,7 @@ ggplot(po4_data_bare, aes(x = Site, y = Result)) +
   theme_minimal()
 
 
-cor.test(x= results_fen$DO..mg.l., y= results_fen$TON_mg_l, method = 'spearman') #nope
+cor.test(x= results_fen$DO..mg.l., y= results_fen$TON_mg_l, method = 'spearman') #not significant
 cor.test(x= results_fen$DO..mg.l., y= results_fen$NH4_mg_l, method = 'spearman') #nearly significant (0.06) 0.3 rho
 cor.test(x= results_fen$DO..mg.l., y= results_fen$PO4_mg_l, method = 'spearman') #significant weak relationship (0.5 rho)
 cor.test(x= results_fen$DO..mg.l., y= results_fen$TDN_mg_l, method = 'spearman') #not significant
@@ -479,21 +475,21 @@ cor.test(x= results_fen$EC..μS., y= results_fen$NH4_mg_l, method = 'spearman')
 cor.test(x= results_fen$EC..μS., y= results_fen$PO4_mg_l, method = 'spearman')
 cor.test(x= results_fen$EC..μS., y= results_fen$TDN_mg_l, method = 'spearman')
 cor.test(x= results_fen$EC..μS., y= results_fen$PON_mg_l, method = 'spearman')
-#None of them
+#None show statistical significance 
 
 cor.test(x= results_fen$Temperature...C., y= results_fen$TON_mg_l, method = 'spearman') 
 cor.test(x= results_fen$Temperature...C., y= results_fen$NH4_mg_l, method = 'spearman')
 cor.test(x= results_fen$Temperature...C., y= results_fen$PO4_mg_l, method = 'spearman')
 cor.test(x= results_fen$Temperature...C., y= results_fen$TDN_mg_l, method = 'spearman')
 cor.test(x= results_fen$Temperature...C., y= results_fen$PON_mg_l, method = 'spearman')
-#None
+#None show statistical significance
 
 cor.test(x= results_fen$pH, y= results_fen$TON_mg_l, method = 'spearman') 
 cor.test(x= results_fen$pH, y= results_fen$NH4_mg_l, method = 'spearman')
 cor.test(x= results_fen$pH, y= results_fen$PO4_mg_l, method = 'spearman')
 cor.test(x= results_fen$pH, y= results_fen$TDN_mg_l, method = 'spearman')
 cor.test(x= results_fen$pH, y= results_fen$PON_mg_l, method = 'spearman')
-#None
+#None show statistical significance
 
 pon_proportions = read.csv("pon_proportions.csv")
 pon_proportions$site = as.factor(pon_proportions$site)
@@ -583,11 +579,11 @@ cor.test(x= results_fen$PO4_mg_l, y= results_fen$NH4_mg_l, method = 'spearman')
 cor.test(x= results_fen$PO4_mg_l, y= results_fen$TON_mg_l, method = 'spearman')
 #All siginificant, strongest between NH4 and TON, then PON and TON, then slight positive correlation between PON and NH4
 
-#More on PO4
+#PO4
 cor.test(x= results_fen$NH4_ug_l, y= results_fen$PO4_ug_l, method = 'spearman') #No correlation
 wilcox.test(results_pre_basin$PO4_ug_l, results_post_basin$PO4_ug_l) #No differneces
 po4_means = read.csv("po4_means.csv")
-#Literally no changes in PO4
+#No changes in PO4
 ggplot(po4_means, aes(x = factor(Site), y = PO4_mg_l)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   geom_hline(yintercept = 0.1, color = "red", linetype = "dashed", size = 1) +
